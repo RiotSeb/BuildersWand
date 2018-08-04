@@ -7,6 +7,7 @@ import de.riotseb.builderswand.util.PlayerEditInfo;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -24,11 +25,15 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.UUID;
 
 public class PlayerListener implements Listener {
 
 	private Map<UUID, PlayerEditInfo> playerToEditInfo = Maps.newHashMap();
+	private Map<UUID, Location> playerToLastClickedBlock = Maps.newHashMap();
 
 	private static TreeSet<BlockFace> facingSet = Sets.newTreeSet(Arrays.asList(
 			BlockFace.EAST,
@@ -71,13 +76,13 @@ public class PlayerListener implements Listener {
 	public void onPlayerInteract(PlayerInteractEvent event) {
 
 		Player player = event.getPlayer();
+		UUID playerId = player.getUniqueId();
 		boolean hasPermission = player.hasPermission(Main.USE_PERMISSION);
 		ItemStack itemInHand = event.getItem();
 
 		if (itemInHand == null) {
 			return;
 		}
-
 
 		if (!Main.getInstance().getDebugStick().isSimilar(itemInHand)) {
 			return;
@@ -102,10 +107,16 @@ public class PlayerListener implements Listener {
 
 			if (player.isSneaking()) {
 
-				PlayerEditInfo playerEditInfo = playerToEditInfo.getOrDefault(player.getUniqueId(),
+				PlayerEditInfo playerEditInfo = playerToEditInfo.getOrDefault(playerId,
 						new PlayerEditInfo(clickedBlock.getLocation()));
 
-				playerEditInfo.updateLocationEditableData(clickedBlock.getLocation());
+				Location lastClicked = playerToLastClickedBlock.get(playerId);
+
+				if (lastClicked == null || !lastClicked.equals(clickedBlock.getLocation())){
+					playerEditInfo.updateLocationEditableData(clickedBlock.getLocation());
+					playerToLastClickedBlock.put(playerId, clickedBlock.getLocation());
+				}
+
 				playerEditInfo.setNextEditingData();
 				String message;
 
@@ -116,7 +127,7 @@ public class PlayerListener implements Listener {
 				}
 
 				player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
-				playerToEditInfo.put(player.getUniqueId(), playerEditInfo);
+				playerToEditInfo.put(playerId, playerEditInfo);
 				return;
 			}
 
@@ -148,8 +159,15 @@ public class PlayerListener implements Listener {
 
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 
-			PlayerEditInfo info = playerToEditInfo.getOrDefault(player.getUniqueId(), new PlayerEditInfo(clickedBlock.getLocation()));
-			info.updateLocationEditableData(clickedBlock.getLocation());
+			PlayerEditInfo info = playerToEditInfo.getOrDefault(playerId, new PlayerEditInfo(clickedBlock.getLocation()));
+
+			Location lastClicked = playerToLastClickedBlock.get(playerId);
+
+			if (lastClicked == null || !lastClicked.equals(clickedBlock.getLocation())) {
+				info.updateLocationEditableData(clickedBlock.getLocation());
+				playerToLastClickedBlock.put(playerId, clickedBlock.getLocation());
+			}
+
 			PlayerEditInfo.BlockDataValue currentlyEditing = info.getCurrentlyEditing();
 
 			if (currentlyEditing == null) {
@@ -205,6 +223,7 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		this.playerToEditInfo.remove(event.getPlayer().getUniqueId());
+		this.playerToLastClickedBlock.remove(event.getPlayer().getUniqueId());
 	}
 
 }
