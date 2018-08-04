@@ -1,0 +1,13 @@
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+/target/
+*.log
+*.sql
+*.sqlite
+/dependency-reduced-pom.xml
+/.idea
+*.iml

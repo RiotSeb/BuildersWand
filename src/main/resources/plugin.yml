@@ -1,0 +1,14 @@
+name: ${project.name}
+version: ${project.version}
+description: ${description}
+
+authors: [RiotSeb]
+website: ${url}
+
+api-version: 1.13
+
+main: de.riotseb.builderswand.Main
+
+commands:
+  builderswand:
+    description: "Receive the builders wand"
