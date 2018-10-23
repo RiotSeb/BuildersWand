@@ -1,0 +1,55 @@
+[
+  {
+    "requirementType": "stats",
+    "id": 1,
+    "data": {
+	  "playerState": "main",
+	  "statistic": "minecraft.tradeWithVillager",
+	  "required": 10
+    }
+  }
+]
+
+[
+  {
+    "requirementType": "resetting_stats",
+    "id": 1,
+    "data": {
+	  "playerState": "main",
+	  "statistic": "minecraft.tradeWithVillager",
+	  "required": 10
+    }
+  }
+]
+
+[
+  {
+    "requirementType": "enter_world",
+    "id": 1,
+    "data": {
+      "world": "nether"
+    }
+  }
+]
+
+[
+  {
+    "requirementType": "custom",
+    "id": 1,
+    "data": {
+      "type": "equipDiamondArmor",
+	  "required": 1
+    }
+  }
+]
+
+[
+  {
+    "requirementType": "databaseCount",
+    "id": 1,
+    "data": {
+      "query": "SELECT uuid as player_id, COUNT(*) as counted from `hotpotato_wins` GROUP BY player_id",
+	  "required": 1
+    }
+  }
+]
